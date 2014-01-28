@@ -1,0 +1,5 @@
+valerio8787_schema:
+    resource: "@Valerio8787SchemaBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
