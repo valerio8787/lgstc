@@ -1,0 +1,98 @@
+{% extends "base.html.twig" %}
+{% block stylesheets %}
+<style type="text/css">
+    html { height: 100% }
+    body { height: 100%; margin: 0; padding: 0 }
+    #map_canvas { height: 100% }
+</style>
+    {% endblock %}
+{% block body %}
+    {% block map %}
+<div id ="map_canvas">
+
+</div>
+    {% endblock map %}
+{% endblock %}
+{% block javascripts %}
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script> 
+<script type="text/javascript">
+    var map;
+    var poses = {{ poses | raw }};
+    var routes = {{ routes | raw }};
+    var route = new google.maps.Polyline({});
+    var markers = [];
+    var lineSymbol = {
+        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
+    };
+
+    function initialize() {
+        var mapOptions = {
+            center: new google.maps.LatLng(50.397, 36.644),
+            zoom: 8,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        map = new google.maps.Map(document.getElementById("map_canvas"),
+                mapOptions);
+    }
+    function showRoute()
+    {
+        var routePoints = [];
+        for (var i = 0; i < poses.length - 1; i++)
+        {
+            var marker = new google.maps.Marker({
+                position: new google.maps.LatLng(poses[i].latitude, poses[i].longitude),
+                title: poses[i].name,
+                map: map,
+                animation: google.maps.Animation.DROP
+            });
+            markers.push(marker);
+            var rPoints = JSON.parse(getRouteByPoints(poses[i], poses[i + 1]).route);
+            routePoints.push(new google.maps.LatLng(rPoints[0].start.lat, rPoints[0].start.lng));
+            routePoints.push(new google.maps.LatLng(rPoints[0].end.lat, rPoints[0].end.lng));
+            for (var j = 1; j < rPoints.length; j++)
+            {
+                routePoints.push(new google.maps.LatLng(rPoints[j].end.lat, rPoints[j].end.lng));
+            }
+        }
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(poses[poses.length - 1].latitude, poses[poses.length - 1].longitude),
+            title: poses[poses.length - 1].name,
+            map: map,
+            animation: google.maps.Animation.DROP
+        });
+        markers.push(marker);
+        route = new google.maps.Polyline({
+            strokeColor: "#00ff00",
+            strokeWeight: 3,
+            strokeOpacity: 1,
+            visible: true,
+            map: map,
+            path: routePoints,
+            icons: [{
+                    icon: lineSymbol,
+                    repeat: '10%',
+                    offset: '30%'
+                }]
+        });
+    }
+    function  getRouteByPoints(p1, p2)
+    {
+        var l = routes.length;
+        for (var i = 0; i < l; i++)
+        {
+            if ((routes[i].pfrom === p1.id) && (routes[i].pto === p2.id) || (
+                    routes[i].pfrom === p2.id) && (routes[i].pto === p1.id))
+            {
+                return routes[i];
+            }
+        }
+    }
+    $(document).ready(function() {
+        initialize();
+
+        showRoute();
+    });
+</script>
+{% endblock %}
+

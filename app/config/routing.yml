@@ -1,3 +1,8 @@
+valerio8787_map:
+    resource: "@Valerio8787MapBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
 valerio8787_schema:
     resource: "@Valerio8787SchemaBundle/Controller/"
     type:     annotation
