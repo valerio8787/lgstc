@@ -26,6 +26,7 @@
         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
     };
 
+    {# Ініціалізація карти #}
     function initialize() {
         var mapOptions = {
             center: new google.maps.LatLng(50.397, 36.644),
@@ -35,9 +36,12 @@
         map = new google.maps.Map(document.getElementById("map_canvas"),
                 mapOptions);
     }
+    
+    {# функція відображення маршруту #}
     function showRoute()
     {
         var routePoints = [];
+        {# Додавання маркерів точок на карту #}
         for (var i = 0; i < poses.length - 1; i++)
         {
             var marker = new google.maps.Marker({
@@ -47,6 +51,7 @@
                 animation: google.maps.Animation.DROP
             });
             markers.push(marker);
+            {#  #}
             var rPoints = JSON.parse(getRouteByPoints(poses[i], poses[i + 1]).route);
             routePoints.push(new google.maps.LatLng(rPoints[0].start.lat, rPoints[0].start.lng));
             routePoints.push(new google.maps.LatLng(rPoints[0].end.lat, rPoints[0].end.lng));
