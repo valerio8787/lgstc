@@ -5,26 +5,103 @@
     body { height: 100%; margin: 0; padding: 0 }
     #map_canvas { height: 100% }
 </style>
+     {% stylesheets
+                'bundles/valerio8787map/css/metro-bootstrap.min.css' %}
+<link rel="stylesheet" href="{{ asset_url }}" />
+     {% endstylesheets %}
     {% endblock %}
 {% block body %}
-    {% block map %}
-<div id ="map_canvas">
+<div class="tab-control" data-role="tab-control">
+    <ul class="tabs">
+        <li><a href="#data_page">Данные</a></li>
+        <li class="active"><a id ="map_tab" href="#map_page">Карта</a></li>                
+    </ul>
 
+    <div class="frames">
+        <div class="frame" id="data_page">                    
+            <div class="accordion" data-closeany="true" data-role="accordion">
+                <div class="accordion-frame">
+                    <a class="heading bg-lightBlue fg-white collapsed" href="#">Настройки</a>
+                    <div class="content" style="display: none;">
+                        <div class="input-control switch">
+                            <label>
+                                От склада
+                                <input type="checkbox" />
+                                <span class="check"></span>
+                            </label>
+                        </div>
+                        <div class="input-control radio default-style margin10" data-role="input-control">
+                            <label>
+                                Метод лепестка
+                                <input type="radio" checked="" name="r1">
+                                <span class="check"></span>
+                            </label>
+                        </div>
+                        <div class="input-control radio default-style margin10" data-role="input-control">
+                            <label>
+                                Задачи дискретной оптимизации
+                                <input type="radio" name="r1">
+                                <span class="check"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="accordion-frame">
+                    <a class="heading ribbed-green fg-white collapsed" href="#">Выбор точек</a>
+                    <div class="content" style="display: none;">
+                        <div class="input-control select">
+                            <select id ="pos_selection" multiple style="height: 150px;">
+                                        {% for pos in posesData %}
+                                <option id ="{{pos.id}}" selected>{{ pos.name }} ({{ pos.address }})</option>
+                                        {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="frame" id="map_page">
+                    {% block map %}
+            <div id ="map_canvas" style="width: 1300px; height: 590px;">
+            </div>
+                    {% endblock map %}
+        </div>
+    </div>
 </div>
-    {% endblock map %}
 {% endblock %}
-{% block javascripts %}
-<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+{% block javascripts %}   
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script> 
+                {% javascripts
+                'bundles/valerio8787map/js/jquery-ui-1.10.4.custom.min.js'
+                'bundles/valerio8787map/js/metro.min.js'
+                'bundles/valerio8787map/js/metro-tab-control.js'
+                 %}
+<script src="{{ asset_url }}"></script>
+            {% endjavascripts %}
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+
 <script type="text/javascript">
     var map;
     var poses = {{ poses | raw }};
     var routes = {{ routes | raw }};
     var route = new google.maps.Polyline({});
     var markers = [];
+    var selectedPos = [];
     var lineSymbol = {
         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
     };
+    function clearMap()
+    {
+        route.map = null;
+        route = new google.maps.Polyline({});
+        for (var i = 0; i < markers.length; i++)
+        {
+            markers[i].map = null;
+        }
+        markers = [];
+    }
 
     {# Ініціалізація карти #}
     function initialize() {
@@ -36,23 +113,23 @@
         map = new google.maps.Map(document.getElementById("map_canvas"),
                 mapOptions);
     }
-    
+
     {# функція відображення маршруту #}
     function showRoute()
     {
         var routePoints = [];
         {# Додавання маркерів точок на карту #}
-        for (var i = 0; i < poses.length - 1; i++)
+        for (var i = 0; i < selectedPos.length - 1; i++)
         {
             var marker = new google.maps.Marker({
-                position: new google.maps.LatLng(poses[i].latitude, poses[i].longitude),
-                title: poses[i].name,
+                position: new google.maps.LatLng(selectedPos[i].latitude, selectedPos[i].longitude),
+                title: selectedPos[i].name,
                 map: map,
                 animation: google.maps.Animation.DROP
             });
             markers.push(marker);
             {#  #}
-            var rPoints = JSON.parse(getRouteByPoints(poses[i], poses[i + 1]).route);
+            var rPoints = JSON.parse(getRouteByPoints(selectedPos[i], selectedPos[i + 1]).route);
             routePoints.push(new google.maps.LatLng(rPoints[0].start.lat, rPoints[0].start.lng));
             routePoints.push(new google.maps.LatLng(rPoints[0].end.lat, rPoints[0].end.lng));
             for (var j = 1; j < rPoints.length; j++)
@@ -61,8 +138,8 @@
             }
         }
         var marker = new google.maps.Marker({
-            position: new google.maps.LatLng(poses[poses.length - 1].latitude, poses[poses.length - 1].longitude),
-            title: poses[poses.length - 1].name,
+            position: new google.maps.LatLng(selectedPos[selectedPos.length - 1].latitude, selectedPos[selectedPos.length - 1].longitude),
+            title: selectedPos[selectedPos.length - 1].name,
             map: map,
             animation: google.maps.Animation.DROP
         });
@@ -93,10 +170,32 @@
             }
         }
     }
+
+    function refreshMap()
+    {
+        selectedPos = [];
+        $('#pos_selection>option:selected').each(
+                function() {
+
+                    for (var i = 0; i < poses.length; i++)
+                    {
+                        if (poses[i].id === parseInt($(this).attr("id")))
+                        {
+                            selectedPos.push(poses[i]);
+                            break;
+                        }
+                    }
+
+                });
+        showRoute();
+    }
     $(document).ready(function() {
         initialize();
-
-        showRoute();
+        refreshMap();
+        $('#map_tab').on('click', function() {
+            initialize();
+            refreshMap();
+        });
     });
 </script>
 {% endblock %}

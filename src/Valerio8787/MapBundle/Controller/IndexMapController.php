@@ -6,8 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 
-class IndexMapController extends Controller
-{
+class IndexMapController extends Controller {
 
     //Менеджер сутностей
     private $em;
@@ -16,8 +15,7 @@ class IndexMapController extends Controller
      * @Route("/index")
      * @Template()
      */
-    public function indexAction()
-    {
+    public function indexAction() {
         //Ініціалізація менеджера сутностей
         $this->em = $this->getDoctrine()->getManager();
 
@@ -33,7 +31,8 @@ class IndexMapController extends Controller
                         ->getQuery()->getArrayResult();
 
         return(array('poses' => json_encode($poses),
-            'routes' => json_encode($routes)));
+            'routes' => json_encode($routes),
+            'posesData' => $poses,));
     }
 
 }
