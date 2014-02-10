@@ -19,6 +19,7 @@ class AppKernel extends Kernel
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new Valerio8787\SchemaBundle\Valerio8787SchemaBundle(),
             new \Valerio8787\MapBundle\Valerio8787MapBundle(),
+            new Valerio8787\OptimizeBundle\Valerio8787OptimizeBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
