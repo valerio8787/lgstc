@@ -170,8 +170,8 @@
         var l = routes.length;
         for (var i = 0; i < l; i++)
         {
-            if ((routes[i].pfrom === p1.id) && (routes[i].pto === p2.id) || (
-                    routes[i].pfrom === p2.id) && (routes[i].pto === p1.id))
+            if ((routes[i].pfrom === p1.id) && (routes[i].pto === p2.id))
+                    //|| (routes[i].pfrom === p2.id) && (routes[i].pto === p1.id))
             {
                 return routes[i];
             }
@@ -200,10 +200,35 @@
         initialize();
         refreshMap();
         $('#map_tab').on('click', function() {
-            initialize();
-            refreshMap();
+            optimizeRoute();
         });
     });
+
+    function optimizeRoute() {
+        initialize();
+        var posInRoute = [];
+        $('#pos_selection>option:selected').each(
+                function() {
+                    posInRoute.push(parseInt($(this).attr("id")));
+                });
+
+        $.ajax({
+            url: "{{ path("Optimize_Route") }}",
+            type: 'post',
+            data: {
+                pos: posInRoute,
+                algorithm: $("input[name ='r1']").filter(':checked').val()
+            },
+            beforeSend: function(xhr) {
+                //xhr.abort();
+            },
+            success: function(data) {
+                selectedPos = data.poses;                
+                showRoute();
+               //refreshMap();
+            }
+        });
+    }
 </script>
 {% endblock %}
 
