@@ -8,6 +8,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Valerio8787\OptimizeBundle\Optimizer\TravelingSalesmanOptimizer;
+use Valerio8787\OptimizeBundle\Optimizer\PetalClockwiseOptimizer;
+use Valerio8787\OptimizeBundle\Optimizer\PetalCounterClockwiseOptimizer;
 
 class OptimizeController extends Controller {
 
@@ -25,13 +28,17 @@ class OptimizeController extends Controller {
                 $this->em = $this->getDoctrine()->getManager();
                 //вибірка точок та маршрутів між ними
                 $poses = $this->em->getRepository('Valerio8787SchemaBundle:Pos')->createQueryBuilder('p')
+                                ->select('p.id, p.name,p.address, p.latitude as lat, p.longitude as lng')
                                 ->where('p.id in (:poses)')
                                 ->setParameter('poses', $request->request->get('pos'))
                                 ->getQuery()->getArrayResult();
                 shuffle($poses);
 
+                $optimizer = $this->getOptimizer($poses, $request->request->get('algorithm'));
+                $optimizer->optimize();
+
                 return new JsonResponse(array(
-                    'poses' => $poses,
+                    'poses' => $optimizer->getOptimazeResult(),
                 ));
 //        $routes = $this->em->getRepository('Valerio8787SchemaBundle:PosToPos')->createQueryBuilder('ptp')
 //                        ->select('ptp.distance, ptp.route, pf.id as pfrom, pt.id as pto')
@@ -45,6 +52,27 @@ class OptimizeController extends Controller {
         } else {
             return new Response('400 Bad request', 400);
         }
+    }
+
+    private function getOptimizer($points, $algorithm) {
+
+        switch ($algorithm) {
+            case 'CW':
+                $optimizer = new PetalClockwiseOptimizer($points);
+            //break;
+            case 'CCW':
+                $optimizer = new PetalCounterClockwiseOptimizer(($points));
+                break;
+            case 'TS':
+                //todo find distance matrix
+                $dm = array();
+                $optimizer = new TravelingSalesmanOptimizer($points, $dm);
+                break;
+            default:
+                $optimizer = null;
+                break;
+        }
+        return $optimizer;
     }
 
 }

@@ -62,7 +62,7 @@ class TravelingSalesmanOptimizer extends AbstractOptimizer {
         
     }
 
-    protected function optimize() {
+    public function optimize() {
         $this->oneWay();
         $this->localOptimize();
         $this->resultPoints = array_merge($this->way, $this->pointsWithoutCoordinates);

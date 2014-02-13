@@ -4,9 +4,9 @@ namespace Valerio8787\OptimizeBundle\Optimizer;
 
 class AbstractOptimizer {
 
-    private $points = array();
-    private $resultPoints = array();
-    private $pointsWithoutCoordinates = array();
+    protected $points = array();
+    protected $resultPoints = array();
+    protected $pointsWithoutCoordinates = array();
 
     public function __construct($points) {
         $this->clearPoints($points);
@@ -22,7 +22,7 @@ class AbstractOptimizer {
         }
     }
 
-    protected function optimize();
+    public function optimize(){}
     final public function getOptimazeResult()
     {
         $this->optimize();
