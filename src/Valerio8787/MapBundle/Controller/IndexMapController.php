@@ -6,7 +6,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 
-class IndexMapController extends Controller {
+class IndexMapController extends Controller
+{
 
     //Менеджер сутностей
     private $em;
@@ -15,12 +16,14 @@ class IndexMapController extends Controller {
      * @Route("/index")
      * @Template()
      */
-    public function indexAction() {
+    public function indexAction()
+    {
         //Ініціалізація менеджера сутностей
         $this->em = $this->getDoctrine()->getManager();
 
         //вибірка точок та маршрутів між ними
         $poses = $this->em->getRepository('Valerio8787SchemaBundle:Pos')->createQueryBuilder('p')
+                        ->select('p.id, p.name,p.address, p.latitude as lat, p.longitude as lng')
                         ->where('p.id in (310,311,312,313,314,315,316,317)')
                         ->getQuery()->getArrayResult();
         $routes = $this->em->getRepository('Valerio8787SchemaBundle:PosToPos')->createQueryBuilder('ptp')

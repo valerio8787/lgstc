@@ -12,7 +12,8 @@ use Valerio8787\OptimizeBundle\Optimizer\TravelingSalesmanOptimizer;
 use Valerio8787\OptimizeBundle\Optimizer\PetalClockwiseOptimizer;
 use Valerio8787\OptimizeBundle\Optimizer\PetalCounterClockwiseOptimizer;
 
-class OptimizeController extends Controller {
+class OptimizeController extends Controller
+{
 
     //Менеджер сутностей
     private $em;
@@ -21,7 +22,8 @@ class OptimizeController extends Controller {
      * @Route("/optimize-route", name = "Optimize_Route")
      * @Template()
      */
-    public function optimizeAction(Request $request) {
+    public function optimizeAction(Request $request)
+    {
         if ($request->request->has('pos') && $request->request->has('algorithm')) {
             try {
                 //Ініціалізація менеджера сутностей
@@ -32,11 +34,7 @@ class OptimizeController extends Controller {
                                 ->where('p.id in (:poses)')
                                 ->setParameter('poses', $request->request->get('pos'))
                                 ->getQuery()->getArrayResult();
-                shuffle($poses);
-
                 $optimizer = $this->getOptimizer($poses, $request->request->get('algorithm'));
-                $optimizer->optimize();
-
                 return new JsonResponse(array(
                     'poses' => $optimizer->getOptimazeResult(),
                 ));
@@ -54,7 +52,8 @@ class OptimizeController extends Controller {
         }
     }
 
-    private function getOptimizer($points, $algorithm) {
+    private function getOptimizer($points, $algorithm)
+    {
 
         switch ($algorithm) {
             case 'CW':

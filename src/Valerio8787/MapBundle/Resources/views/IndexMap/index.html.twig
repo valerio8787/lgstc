@@ -120,6 +120,32 @@
         map = new google.maps.Map(document.getElementById("map_canvas"),
                 mapOptions);
     }
+    function optimizeRoute() {
+        initialize();
+        var posInRoute = [];
+        $('#pos_selection>option:selected').each(
+                function() {
+                    posInRoute.push(parseInt($(this).attr("id")));
+                });
+
+        $.ajax({
+            url: "{{ path("Optimize_Route") }}",
+            type: 'post',
+            data: {
+                pos: posInRoute,
+                algorithm: $("input[name ='r1']").filter(':checked').val()
+            },
+            beforeSend: function(xhr) {
+                //xhr.abort();
+            },
+            success: function(data) {
+                selectedPos = data.poses;
+                console.log(13);
+                showRoute();
+                //refreshMap();
+            }
+        });
+    }
 
     {# функція відображення маршруту #}
     function showRoute()
@@ -129,7 +155,7 @@
         for (var i = 0; i < selectedPos.length - 1; i++)
         {
             var marker = new google.maps.Marker({
-                position: new google.maps.LatLng(selectedPos[i].latitude, selectedPos[i].longitude),
+                position: new google.maps.LatLng(selectedPos[i].lat, selectedPos[i].lng),
                 title: selectedPos[i].name,
                 map: map,
                 animation: google.maps.Animation.DROP
@@ -145,7 +171,7 @@
             }
         }
         var marker = new google.maps.Marker({
-            position: new google.maps.LatLng(selectedPos[selectedPos.length - 1].latitude, selectedPos[selectedPos.length - 1].longitude),
+            position: new google.maps.LatLng(selectedPos[selectedPos.length - 1].lat, selectedPos[selectedPos.length - 1].lng),
             title: selectedPos[selectedPos.length - 1].name,
             map: map,
             animation: google.maps.Animation.DROP
@@ -171,7 +197,6 @@
         for (var i = 0; i < l; i++)
         {
             if ((routes[i].pfrom === p1.id) && (routes[i].pto === p2.id))
-                    //|| (routes[i].pfrom === p2.id) && (routes[i].pto === p1.id))
             {
                 return routes[i];
             }
@@ -204,31 +229,6 @@
         });
     });
 
-    function optimizeRoute() {
-        initialize();
-        var posInRoute = [];
-        $('#pos_selection>option:selected').each(
-                function() {
-                    posInRoute.push(parseInt($(this).attr("id")));
-                });
-
-        $.ajax({
-            url: "{{ path("Optimize_Route") }}",
-            type: 'post',
-            data: {
-                pos: posInRoute,
-                algorithm: $("input[name ='r1']").filter(':checked').val()
-            },
-            beforeSend: function(xhr) {
-                //xhr.abort();
-            },
-            success: function(data) {
-                selectedPos = data.poses;                
-                showRoute();
-               //refreshMap();
-            }
-        });
-    }
 </script>
 {% endblock %}
 
