@@ -12,38 +12,32 @@ use Valerio8787\OptimizeBundle\Optimizer\TravelingSalesmanOptimizer;
 use Valerio8787\OptimizeBundle\Optimizer\PetalClockwiseOptimizer;
 use Valerio8787\OptimizeBundle\Optimizer\PetalCounterClockwiseOptimizer;
 
-class OptimizeController extends Controller
-{
+class OptimizeController extends Controller {
 
     //Менеджер сутностей
     private $em;
+    private $posIds;
 
     /**
      * @Route("/optimize-route", name = "Optimize_Route")
      * @Template()
      */
-    public function optimizeAction(Request $request)
-    {
+    public function optimizeAction(Request $request) {
         if ($request->request->has('pos') && $request->request->has('algorithm')) {
             try {
                 //Ініціалізація менеджера сутностей
                 $this->em = $this->getDoctrine()->getManager();
+                $this->posIds = $request->request->get('pos');
                 //вибірка точок та маршрутів між ними
                 $poses = $this->em->getRepository('Valerio8787SchemaBundle:Pos')->createQueryBuilder('p')
                                 ->select('p.id, p.name,p.address, p.latitude as lat, p.longitude as lng')
                                 ->where('p.id in (:poses)')
-                                ->setParameter('poses', $request->request->get('pos'))
+                                ->setParameter('poses', $this->posIds)
                                 ->getQuery()->getArrayResult();
                 $optimizer = $this->getOptimizer($poses, $request->request->get('algorithm'));
                 return new JsonResponse(array(
                     'poses' => $optimizer->getOptimazeResult(),
                 ));
-//        $routes = $this->em->getRepository('Valerio8787SchemaBundle:PosToPos')->createQueryBuilder('ptp')
-//                        ->select('ptp.distance, ptp.route, pf.id as pfrom, pt.id as pto')
-//                        ->innerjoin('ptp.posFrom', 'pf')
-//                        ->innerjoin('ptp.posTo', 'pt')
-//                        ->where('pf.id in (310,311,312,313,314,315,316,317) AND pt.id in (310,311,312,313,314,315,316,317)')
-//                        ->getQuery()->getArrayResult();
             } catch (\Exception $e) {
                 return new Response('Error', 500);
             }
@@ -52,8 +46,7 @@ class OptimizeController extends Controller
         }
     }
 
-    private function getOptimizer($points, $algorithm)
-    {
+    private function getOptimizer($points, $algorithm) {
 
         switch ($algorithm) {
             case 'CW':
@@ -64,7 +57,21 @@ class OptimizeController extends Controller
                 break;
             case 'TS':
                 //todo find distance matrix
+                $routes = $this->em->getRepository('Valerio8787SchemaBundle:PosToPos')->createQueryBuilder('ptp')
+                                ->select('ptp.distance, ptp.route, pf.id as pfrom, pt.id as pto')
+                                ->innerjoin('ptp.posFrom', 'pf')
+                                ->innerjoin('ptp.posTo', 'pt')
+                                ->where('pf.id in (:posesIds) AND pt.id in (:posesIds)')
+                                ->setParameter('posesIds', $this->posIds)
+                                ->getQuery()->getArrayResult();
                 $dm = array();
+                foreach($routes as $route)
+                {
+                    $dm[$route['pfrom']][$route['pto']] = $route['distance'];
+                }
+//                var_dump($dm); die;
+                
+                
                 $optimizer = new TravelingSalesmanOptimizer($points, $dm);
                 break;
             default:
