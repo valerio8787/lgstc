@@ -31,7 +31,7 @@ class TravelingSalesmanOptimizer extends AbstractOptimizer {
         do {
             $k++;
             $change = false;
-            for ($i = 1; $i < $n - 2; $i++) {
+            for ($i = 1; $i < $n - 1; $i++) {
                 for ($j = $i + 1; $j < $n - 1; $j++) {
                     // var_dump($i,$j);
                     if ($j == $i + 1) {
@@ -61,7 +61,7 @@ class TravelingSalesmanOptimizer extends AbstractOptimizer {
                 ($this->dm[$this->way[$i - 1]['point']['id']][$this->way[$j]['point']['id']] + $this->dm[$this->way[$j]['point']['id']][$this->way[$i]['point']['id']] + $this->dm[$this->way[$i]['point']['id']][$this->way[$j + 1]['point']['id']]));
     }
 
-    private function best2($i, $j) {
+    private function best2($i, $j) {        
         return (($this->dm[$this->way[$i - 1]['point']['id']][$this->way[$i]['point']['id']] + $this->dm[$this->way[$i]['point']['id']][$this->way[$i + 1]['point']['id']] + $this->dm[$this->way[$j - 1]['point']['id']][$this->way[$j]['point']['id']] + $this->dm[$this->way[$j]['point']['id']][$this->way[$j + 1]['point']['id']]) >
                 ($this->dm[$this->way[$i - 1]['point']['id']][$this->way[$j]['point']['id']] + $this->dm[$this->way[$j]['point']['id']][$this->way[$i + 1]['point']['id']] + $this->dm[$this->way[$j - 1]['point']['id']][$this->way[$i]['point']['id']] + $this->dm[$this->way[$i]['point']['id']][$this->way[$j + 1]['point']['id']]));
     }

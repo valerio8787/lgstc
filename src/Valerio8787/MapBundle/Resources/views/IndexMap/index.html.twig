@@ -26,7 +26,7 @@
                         <div class="input-control switch">
                             <label>
                                 От склада
-                                <input type="checkbox" />
+                                <input id= "fromWh" type="checkbox" />
                                 <span class="check"></span>
                             </label>
                         </div>
@@ -127,11 +127,12 @@
                 function() {
                     posInRoute.push(parseInt($(this).attr("id")));
                 });
-
+     
         $.ajax({
             url: "{{ path("Optimize_Route") }}",
             type: 'post',
             data: {
+                fromWh: ($('#fromWh')[0].checked)?1:0,
                 pos: posInRoute,
                 algorithm: $("input[name ='r1']").filter(':checked').val()
             },

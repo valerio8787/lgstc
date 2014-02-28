@@ -28,13 +28,37 @@ class OptimizeController extends Controller {
                 //Ініціалізація менеджера сутностей
                 $this->em = $this->getDoctrine()->getManager();
                 $this->posIds = $request->request->get('pos');
+                
                 //вибірка точок та маршрутів між ними
                 $poses = $this->em->getRepository('Valerio8787SchemaBundle:Pos')->createQueryBuilder('p')
                                 ->select('p.id, p.name,p.address, p.latitude as lat, p.longitude as lng')
                                 ->where('p.id in (:poses)')
                                 ->setParameter('poses', $this->posIds)
                                 ->getQuery()->getArrayResult();
-                $optimizer = $this->getOptimizer($poses, $request->request->get('algorithm'));
+                $pArray = array();
+                
+                if (($request->request->has('fromWh')) && boolval($request->request->get('fromWh'))) {
+                    $pos = $this->em->getRepository('Valerio8787SchemaBundle:Pos')->find('413');
+                    $posData = array('id' => $pos->getId(),
+                        'name' => $pos->getName(),
+                        'address' => $pos->getAddress(),
+                        'lat' => $pos->getLatitude(),
+                        'lng' => $pos->getLongitude());
+                    $pArray[] = $posData;
+                    
+                    //$pArray[] = $posData;
+                }
+                foreach ($poses as $p) {
+                        $pArray[] = $p;
+                    }
+                if (($request->request->has('fromWh')) && boolval($request->request->get('fromWh'))) {
+                    $this->posIds[] = 413;
+                }
+
+
+
+
+                $optimizer = $this->getOptimizer($pArray, $request->request->get('algorithm'));
                 return new JsonResponse(array(
                     'poses' => $optimizer->getOptimazeResult(),
                 ));
@@ -56,6 +80,7 @@ class OptimizeController extends Controller {
                 $optimizer = new PetalCounterClockwiseOptimizer(($points));
                 break;
             case 'TS':
+                
                 //todo find distance matrix
                 $routes = $this->em->getRepository('Valerio8787SchemaBundle:PosToPos')->createQueryBuilder('ptp')
                                 ->select('ptp.distance, ptp.route, pf.id as pfrom, pt.id as pto')
@@ -65,13 +90,12 @@ class OptimizeController extends Controller {
                                 ->setParameter('posesIds', $this->posIds)
                                 ->getQuery()->getArrayResult();
                 $dm = array();
-                foreach($routes as $route)
-                {
+                foreach ($routes as $route) {
                     $dm[$route['pfrom']][$route['pto']] = $route['distance'];
                 }
-//                var_dump($dm); die;
                 
-                
+
+
                 $optimizer = new TravelingSalesmanOptimizer($points, $dm);
                 break;
             default:
