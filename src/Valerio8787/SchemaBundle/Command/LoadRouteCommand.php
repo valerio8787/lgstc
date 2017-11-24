@@ -26,23 +26,29 @@ class LoadRouteCommand extends ContainerAwareCommand
     {
 
         $em = $this->getContainer()->get('doctrine')->getManager('default');
-        $poses = $em->getRepository('Valerio8787SchemaBundle:Pos')->findAll();
-
-        foreach ($poses as $pFrom) {
-            var_dump($pFrom->getName());
-            foreach ($poses as $pTo) {
-                if ($pFrom->getId() != $pTo->getId()) {
+        //$poses = $em->getRepository('Valerio8787SchemaBundle:Pos')->findAll();
+        $poses = $em->getRepository('Valerio8787SchemaBundle:Pos')->createQueryBuilder('p')
+                        //->select('p.id, p.name,p.address, p.latitude as lat, p.longitude as lng')
+                        ->where('p.id in (310,311,312,313,314,315,316,317)')
+                        ->getQuery()->getResult();
+        $pTo = $em->getRepository('Valerio8787SchemaBundle:Pos')->find(413);
+        //foreach ($poses as $pFrom) {
+            //var_dump($pFrom->getName());
+            foreach ($poses as $pFrom) {
+                if ($pFrom->getId() 
+                        != $pTo->getId()) {
 
                     $pft = new PosToPos();
                     $pft->setPosFrom($pFrom);
                     $pft->setPosTo($pTo);
                     $pft->setDistance(0);
                     $pft->setRoute($this->getRoute($pFrom, $pTo));
+                    var_dump($pft->getRoute());
                     $em->persist($pft);
                 }
                 $em->flush();
             }
-        }
+        //}
     }
 
     private function getRoute($from, $to)

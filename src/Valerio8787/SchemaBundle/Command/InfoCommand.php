@@ -9,21 +9,21 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class InfoCommand extends ContainerAwareCommand
-{
+class InfoCommand extends ContainerAwareCommand {
 
-    protected function configure()
-    {
+    protected function configure() {
         $this
                 ->setName('logistica:info-route')
                 ->setDescription('Load routes for exists Poses');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+    protected function execute(InputInterface $input, OutputInterface $output) {
 
         $em = $this->getContainer()->get('doctrine')->getManager('default');
-        $ptpes = $em->getRepository('Valerio8787SchemaBundle:PosToPos')->findAll();
+        $p = $em->getRepository('Valerio8787SchemaBundle:Pos')->find(413);
+        $ptpes = $em->getRepository('Valerio8787SchemaBundle:PosToPos')->createQueryBuilder('q')
+                        ->where('q.posFrom = :p OR q.posTo = :p')
+                        ->setParameter('p', $p)->getQuery()->getResult();
 
         foreach ($ptpes as $ptp) {
             $rInfo = json_decode($ptp->getRoute());

@@ -27,21 +27,27 @@ class TravelingSalesmanOptimizer extends AbstractOptimizer {
 
     private function localOptimize() {
         $n = count($this->way);
+        $k = 0;
         do {
+            $k++;
             $change = false;
-            for ($i = 0; $i < $n - 1; $i++) {
-                for ($j = $i + 1; $j < $n; $i++) {
-                    if ($i = $j + 1) {
+            for ($i = 1; $i < $n - 1; $i++) {
+                for ($j = $i + 1; $j < $n - 1; $j++) {
+                    // var_dump($i,$j);
+                    if ($j == $i + 1) {
                         if ($this->best1($i, $j)) {
                             $this->swap($i, $j);
+                            $change = true;
                         }
-                    } else if (($i = 1) && ($j = $n)) {
+                    } else if (($i == 1) && ($j == $n)) {
                         if ($this->best1($i, $j)) {
                             $this->swap($i, $j);
+                            $change = true;
                         }
                     } else
                     if ($this->best2($i, $j)) {
                         $this->swap($i, $j);
+                        $change = true;
                     }
                 }
             }
@@ -49,23 +55,31 @@ class TravelingSalesmanOptimizer extends AbstractOptimizer {
     }
 
     private function best1($i, $j) {
-        return (($this->dm[$i - 1][$i] + $this->dm[$i][$j] + $this->dm[$j][$j + 1]) >
-                ($this->dm[$i - 1][$j] + $this->dm[$j][$i] + $this->dm[$i][$j + 1]));
+
+        //$this->way[$i]['point']['id'], $this->way[$j]['point']['id']
+        return (($this->dm[$this->way[$i - 1]['point']['id']][$this->way[$i]['point']['id']] + $this->dm[$this->way[$i]['point']['id']][$this->way[$j]['point']['id']] + $this->dm[$this->way[$j]['point']['id']][$this->way[$j + 1]['point']['id']]) >
+                ($this->dm[$this->way[$i - 1]['point']['id']][$this->way[$j]['point']['id']] + $this->dm[$this->way[$j]['point']['id']][$this->way[$i]['point']['id']] + $this->dm[$this->way[$i]['point']['id']][$this->way[$j + 1]['point']['id']]));
     }
 
-    private function best2($i, $j) {
-        return (($this->dm[$i - 1][$i] + $this->dm[$i][$i + 1] + $this->dm[$j - 1][$j] + $this->dm[$j][$j + 1]) >
-                ($this->dm[$i - 1][$j] + $this->dm[$j][$i + 1] + $this->dm[$j - 1][$i] + $this->dm[$i][$j + 1]));
+    private function best2($i, $j) {        
+        return (($this->dm[$this->way[$i - 1]['point']['id']][$this->way[$i]['point']['id']] + $this->dm[$this->way[$i]['point']['id']][$this->way[$i + 1]['point']['id']] + $this->dm[$this->way[$j - 1]['point']['id']][$this->way[$j]['point']['id']] + $this->dm[$this->way[$j]['point']['id']][$this->way[$j + 1]['point']['id']]) >
+                ($this->dm[$this->way[$i - 1]['point']['id']][$this->way[$j]['point']['id']] + $this->dm[$this->way[$j]['point']['id']][$this->way[$i + 1]['point']['id']] + $this->dm[$this->way[$j - 1]['point']['id']][$this->way[$i]['point']['id']] + $this->dm[$this->way[$i]['point']['id']][$this->way[$j + 1]['point']['id']]));
     }
 
     private function swap($i, $j) {
-        
+        $tmp = $this->way[$i];
+        $this->way[$i] = $this->way[$j];
+        $this->way[$j] = $tmp;
     }
 
-    protected function optimize() {
+    public function optimize() {
         $this->oneWay();
         $this->localOptimize();
-        $this->resultPoints = array_merge($this->way, $this->pointsWithoutCoordinates);
+        $resultPoints = array();
+        foreach ($this->way as $p) {
+            $resultPoints[] = $p['point'];
+        }
+        $this->resultPoints = array_merge($resultPoints, $this->pointsWithoutCoordinates);
     }
 
 }

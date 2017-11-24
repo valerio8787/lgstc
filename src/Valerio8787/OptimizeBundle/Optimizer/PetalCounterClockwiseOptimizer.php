@@ -194,7 +194,7 @@ class PetalCounterClockwiseOptimizer extends AbstractOptimizer {
      * 
      * Функция формирования результирующего массива точек 
      */
-    protected function optimize() {
+    public function optimize() {
         $this->findExtremums();
         $this->findMediana();
         $this->establishPoints();
